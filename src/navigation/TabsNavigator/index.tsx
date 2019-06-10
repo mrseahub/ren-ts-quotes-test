@@ -5,14 +5,21 @@ import {
   Text,
   TouchableOpacity,
   SafeAreaView,
+  Dimensions,
 } from 'react-native';
+
+const WINDOW = Dimensions.get('window');
+
+export interface TabsNavigatorSceneProps {
+  isFocused: boolean;
+}
 
 export interface TabsNavigatorProps {
   tabs: TabProps[];
 }
 
 export interface TabsNavigatorState {
-  currentTab:TabProps
+  currentTab: TabProps;
 }
 
 export interface TabProps {
@@ -27,20 +34,39 @@ class TabsNavigatorComponent extends React.Component<
   constructor(props: TabsNavigatorProps) {
     super(props);
     this.state = {
-      currentTab: props.tabs[0]
+      currentTab: props.tabs[0],
     };
   }
 
-
   handleTabPress = (tabProps: TabProps, i: number) => {
-    this.setState({currentTab: tabProps})
-  }
+    this.setState({ currentTab: tabProps });
+  };
+
+  renderScene = (tabProps: TabProps, i: number) => {
+    const isFocused = tabProps === this.state.currentTab;
+    const Scene = tabProps.scene;
+    const sceneContainerStyle = [
+      StyleSheet.absoluteFill,
+      tabsNavigatorStyles.sceneContainer,
+      isFocused &&
+        tabsNavigatorStyles.sceneActiveContainer,
+    ];
+    const sceneProps: TabsNavigatorSceneProps = {isFocused}
+    return (
+      <View key={`${Scene.displayName}_${i}`} style={sceneContainerStyle}>
+        <SafeAreaView style={tabsNavigatorStyles.container}>
+          <Scene {...sceneProps} />
+        </SafeAreaView>
+      </View>
+    );
+  };
 
   renderTab = (tabProps: TabProps, i: number) => {
     const tabContainerStyle = [
       tabsNavigatorStyles.tabItemContainer,
-      tabProps === this.state.currentTab && tabsNavigatorStyles.tabItemActiveContainer
-    ]
+      tabProps === this.state.currentTab &&
+        tabsNavigatorStyles.tabItemActiveContainer,
+    ];
     return (
       <TouchableOpacity
         key={`${tabProps.scene.displayName}_${i}`}
@@ -53,12 +79,11 @@ class TabsNavigatorComponent extends React.Component<
   };
 
   public render() {
-    const CurrentTab = this.state.currentTab.scene;
     return (
       <>
-        <SafeAreaView style={tabsNavigatorStyles.sceneContainer}>
-          <CurrentTab {...this.props}/>
-        </SafeAreaView>
+        <View style={tabsNavigatorStyles.container}>
+          {this.props.tabs.map(this.renderScene)}
+        </View>
         <SafeAreaView style={tabsNavigatorStyles.tabsContainer}>
           {this.props.tabs.map(this.renderTab)}
         </SafeAreaView>
@@ -74,11 +99,16 @@ export const tabsNavigatorStyles = StyleSheet.create({
     flex: 1,
   },
   sceneContainer: {
-    flex: 1,
+    opacity: 0,
+    transform: [{ translateX: WINDOW.width }],
+  },
+  sceneActiveContainer: {
+    opacity: 1,
+    transform: [{ translateX: 0 }],
   },
   tabsContainer: {
     flexDirection: 'row',
-    height: 70,
+    height: 60,
   },
   tabItemContainer: {
     flex: 1,
@@ -86,6 +116,6 @@ export const tabsNavigatorStyles = StyleSheet.create({
     alignItems: 'center',
   },
   tabItemActiveContainer: {
-    backgroundColor:'lightgray'
+    backgroundColor: 'lightgray',
   },
 });
