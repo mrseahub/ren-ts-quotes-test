@@ -3,7 +3,9 @@ import {
   View,
   StyleSheet,
   Text,
-  FlatList
+  FlatList,
+  Animated,
+  ActivityIndicator,
 } from 'react-native';
 
 export type FlatListItem = {
@@ -12,7 +14,7 @@ export type FlatListItem = {
 };
 
 export interface QuoteTableItemProps {
-  title: string;
+  name: string;
   last: string;
   highestBid: string;
   percentChange: string;
@@ -20,58 +22,125 @@ export interface QuoteTableItemProps {
 
 export interface QuoteTableProps {
   url: string;
+  updated: boolean;
+  updateInterval: number;
+  header: string[];
 }
 
 export interface QuoteTableState {
   data: QuoteTableItemProps[];
+  isLoading: boolean;
+  lastUpdate: any | null;
 }
 
 class QuoteTableComponent extends React.Component<
   QuoteTableProps,
   QuoteTableState
 > {
+  updateTimer: any;
+
   constructor(props: QuoteTableProps) {
     super(props);
     this.state = {
       data: [],
+      isLoading: true,
+      lastUpdate: null,
     };
   }
 
-  componentWillMount() {
-    fetch(this.props.url)
-      .then(r => r.json())
-      .then(json => {
-        const data = Object.keys(json).map(key => {
-          return { title: key, ...json[key] };
-        });
-        this.setState({ data });
-      });
+  handleRequestErorr = (err: any) => {
+    __DEV__ && console.log(err);
+    this.setState({ lastUpdate: 'Update failed' });
+  };
+
+  handleSuccess = (json: any) => {
+    const data = Object.keys(json).map(name => {
+      const { last, highestBid, percentChange } = json[name];
+      return { name, last, highestBid, percentChange };
+    });
+    this.setState({
+      data,
+      isLoading: false,
+      lastUpdate: new Date(Date.now()).toLocaleString(),
+    });
   }
 
-  keyExtractor = (item: QuoteTableItemProps, i: number) => `${i}`;
+  handleUpdateQuotes = () => {
+    if (!this.props.updated) return;
+    fetch(this.props.url)
+      .then(r => r.json())
+      .then(this.handleSuccess)
+      .catch(this.handleRequestErorr);
+  };
 
-  renderItem = ({ item, index }: FlatListItem) => {
+  keyExtractor = (item: QuoteTableItemProps, i: number) => `${item.name}_${i}`;
+
+  componentDidMount() {
+    this.handleUpdateQuotes();
+    this.updateTimer = setInterval(
+      this.handleUpdateQuotes,
+      this.props.updateInterval
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.updateTimer);
+  }
+
+  renderRow = (text: string, i: number) => {
+    return (
+      <Text
+        key={`${text.replace(/\s+/, '')}_${i}`}
+        numberOfLines={1}
+        style={quoteTableStyles.itemColContainer}
+      >
+        {text}
+      </Text>
+    );
+  };
+
+  renderItem = ({ item }: FlatListItem) => {
     return (
       <View style={quoteTableStyles.itemContainer}>
-        <View style={quoteTableStyles.itemRowContainer}>
-          <Text style={quoteTableStyles.itemColContainer}>{item.title}</Text>
-          <Text style={quoteTableStyles.itemColContainer}>{item.last}</Text>
-        </View>
-        <View style={quoteTableStyles.itemRowContainer}>
-          <Text style={quoteTableStyles.itemColContainer}>{item.highestBid}</Text>
-          <Text style={quoteTableStyles.itemColContainer}>{item.percentChange}</Text>
-        </View>
+        {Object.keys(item).map((key, i) =>
+          this.renderRow(item[key as keyof QuoteTableItemProps], i)
+        )}
       </View>
     );
   };
 
+  renderHeader = () => {
+    return (
+      <View style={quoteTableStyles.headerContainer}>
+        <View style={quoteTableStyles.itemContainer}>
+          {this.props.header.map(this.renderRow)}
+        </View>
+        <Text style={quoteTableStyles.updatedData}>
+          {`Last update: ${this.state.lastUpdate}`}
+        </Text>
+      </View>
+    );
+  };
+
+  renderPreloader = () => {
+    if (this.state.isLoading) {
+      return <ActivityIndicator style={quoteTableStyles.itemContainer} />;
+    }
+    return null;
+  };
+
   public render() {
     return (
-      <FlatList
-        data={this.state.data}
-        renderItem={this.renderItem}
-        keyExtractor={this.keyExtractor}
-      />
+      <>
+        {this.renderHeader()}
+        <FlatList
+          data={this.state.data}
+          renderItem={this.renderItem}
+          keyExtractor={this.keyExtractor}
+          ListFooterComponent={this.renderPreloader()}
+          initialNumToRender={10}
+        />
+      </>
     );
   }
 }
@@ -83,13 +152,21 @@ export const quoteTableStyles = StyleSheet.create({
     flex: 1,
   },
   itemContainer: {
-    height: 80,
-  },
-  itemRowContainer: {
+    padding: 5,
+    paddingTop: 15,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   itemColContainer: {
-    flex: 1
+    flex: 1,
+  },
+  headerContainer: {
+    backgroundColor: 'lightgray',
+  },
+  updatedData: {
+    fontSize: 11,
+    alignSelf: 'flex-end',
+    padding: 5,
   },
 });
