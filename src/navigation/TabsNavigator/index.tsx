@@ -1,31 +1,18 @@
 import React from 'react';
 import {
-  View,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  SafeAreaView,
-  Dimensions,
+  View,
 } from 'react-native';
-
-const WINDOW = Dimensions.get('window');
-
-export interface TabsNavigatorSceneProps {
-  isFocused: boolean;
-}
-
-export interface TabsNavigatorProps {
-  tabs: TabProps[];
-}
-
-export interface TabsNavigatorState {
-  currentTab: TabProps;
-}
-
-export interface TabProps {
-  title: string;
-  scene: React.ComponentClass<any>;
-}
+import { tabsNavigatorStyles } from './styles';
+import {
+  TabProps,
+  TabsNavigatorProps,
+  TabsNavigatorSceneProps,
+  TabsNavigatorState,
+} from './types';
 
 class TabsNavigatorComponent extends React.Component<
   TabsNavigatorProps,
@@ -48,10 +35,9 @@ class TabsNavigatorComponent extends React.Component<
     const sceneContainerStyle = [
       StyleSheet.absoluteFill,
       tabsNavigatorStyles.sceneContainer,
-      isFocused &&
-        tabsNavigatorStyles.sceneActiveContainer,
+      isFocused && tabsNavigatorStyles.sceneActiveContainer,
     ];
-    const sceneProps: TabsNavigatorSceneProps = {isFocused}
+    const sceneProps: TabsNavigatorSceneProps = { isFocused };
     return (
       <View key={`${Scene.displayName}_${i}`} style={sceneContainerStyle}>
         <SafeAreaView style={tabsNavigatorStyles.container}>
@@ -93,29 +79,3 @@ class TabsNavigatorComponent extends React.Component<
 }
 
 export const TabsNavigator = TabsNavigatorComponent;
-
-export const tabsNavigatorStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  sceneContainer: {
-    opacity: 0,
-    transform: [{ translateX: WINDOW.width }],
-  },
-  sceneActiveContainer: {
-    opacity: 1,
-    transform: [{ translateX: 0 }],
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    height: 60,
-  },
-  tabItemContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabItemActiveContainer: {
-    backgroundColor: 'lightgray',
-  },
-});

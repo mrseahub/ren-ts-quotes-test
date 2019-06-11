@@ -1,37 +1,12 @@
 import * as React from 'react';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { quoteTableStyles } from './styles';
 import {
-  View,
-  StyleSheet,
-  Text,
-  FlatList,
-  Animated,
-  ActivityIndicator,
-} from 'react-native';
-
-export type FlatListItem = {
-  item: QuoteTableItemProps;
-  index: number;
-};
-
-export interface QuoteTableItemProps {
-  name: string;
-  last: string;
-  highestBid: string;
-  percentChange: string;
-}
-
-export interface QuoteTableProps {
-  url: string;
-  updated: boolean;
-  updateInterval: number;
-  header: string[];
-}
-
-export interface QuoteTableState {
-  data: QuoteTableItemProps[];
-  isLoading: boolean;
-  lastUpdate: any | null;
-}
+  FlatListItem,
+  QuoteTableItemProps,
+  QuoteTableProps,
+  QuoteTableState,
+} from './types';
 
 class QuoteTableComponent extends React.Component<
   QuoteTableProps,
@@ -63,7 +38,7 @@ class QuoteTableComponent extends React.Component<
       isLoading: false,
       lastUpdate: new Date(Date.now()).toLocaleString(),
     });
-  }
+  };
 
   handleUpdateQuotes = () => {
     if (!this.props.updated) return;
@@ -146,27 +121,3 @@ class QuoteTableComponent extends React.Component<
 }
 
 export const QuoteTable = QuoteTableComponent;
-
-export const quoteTableStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  itemContainer: {
-    padding: 5,
-    paddingTop: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemColContainer: {
-    flex: 1,
-  },
-  headerContainer: {
-    backgroundColor: 'lightgray',
-  },
-  updatedData: {
-    fontSize: 11,
-    alignSelf: 'flex-end',
-    padding: 5,
-  },
-});

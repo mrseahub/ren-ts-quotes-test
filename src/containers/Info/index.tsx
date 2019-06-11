@@ -1,34 +1,16 @@
 import * as React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { Text, View } from 'react-native';
+import { strings } from '../../common/strings';
+import { infoStyles } from './styles';
 
-export interface InfoProps {
-}
-
-export interface InfoState {
-}
-
-class InfoComponent extends React.Component<InfoProps, InfoState> {
-  constructor(props: InfoProps) {
-    super(props);
-    this.state = {
-    };
-  }
-
+class InfoComponent extends React.Component {
   public render() {
     return (
       <View style={infoStyles.container}>
-         <Text>Info Component</Text>
+         <Text>{strings.infoComponent}</Text>
       </View>
     );
   }
 }
 
 export const Info = InfoComponent;
-
-export const infoStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

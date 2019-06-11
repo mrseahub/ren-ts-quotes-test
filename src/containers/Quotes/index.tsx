@@ -1,17 +1,8 @@
 import * as React from 'react';
-import { View, StyleSheet, Text, AppState } from 'react-native';
+import { AppState, AppStateStatus } from 'react-native';
 import { QuoteTable } from '../../components/QuotesTable';
-import { TabsNavigatorSceneProps } from '../../navigation/TabsNavigator/index';
-
-const header = ['Name', 'Last', 'Highest Bid', 'Percent Change'];
-const url = 'https://poloniex.com/public?command=returnTicker';
-const updateInterval = 5000;
-
-export interface QuotesProps extends TabsNavigatorSceneProps {}
-
-export interface QuotesState {
-  isActiveApp: boolean;
-}
+import { header, updateInterval, url } from './config';
+import { QuotesProps, QuotesState } from './types';
 
 class QuotesComponent extends React.Component<QuotesProps, QuotesState> {
   constructor(props: QuotesProps) {
@@ -21,7 +12,7 @@ class QuotesComponent extends React.Component<QuotesProps, QuotesState> {
     };
   }
 
-  handleAppStateChange = (nextAppState: string) => {
+  handleAppStateChange = (nextAppState: AppStateStatus) => {
     this.setState({ isActiveApp: nextAppState === 'active' });
   };
 
